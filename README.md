@@ -334,8 +334,7 @@ pipeline {
     }
 }
 ```
-
-###Accessing the website
-** We can access the application by using the link given by argoCD or we can configure route53 for coustom domain **
+### Accessing the website
+**We can access the application by using the link given by argoCD or we can configure route53 for coustom domain**
 
 ---
