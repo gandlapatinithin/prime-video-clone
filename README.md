@@ -86,28 +86,27 @@ Create a Jenkins pipeline by adding the following script:
 ```groovy
 pipeline {
     agent any
-    
-    parameters {
-        string(name: 'ECR_REPO_NAME', defaultValue: 'amazon-prime', description: 'Enter repository name')
-        string(name: 'AWS_ACCOUNT_ID', defaultValue: '123456789012', description: 'Enter AWS Account ID') // Added missing quote
-    }
-    
-    tools {
+
+    tools{
         jdk 'JDK'
         nodejs 'NodeJS'
     }
-    
-    environment {
+    parameters{
+        string(name: 'ECR_REPO_NAME', defaultValue: 'amazon-prime', description: 'Enter repository name')
+        string(name: 'AWS_ACCOUNT_ID', defaultValue: '626635421473', description: 'Enter AWS Account ID')
+    }
+
+    environment{
         SCANNER_HOME = tool 'SonarQube Scanner'
     }
-    
+
     stages {
         stage('1. Git Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/pandacloud1/DevopsProject2.git'
+                git branch: 'main', url: 'https://github.com/gandlapatinithin/prime-video-clone.git'
             }
         }
-        
+
         stage('2. SonarQube Analysis') {
             steps {
                 withSonarQubeEnv ('sonar-server') {
@@ -119,36 +118,30 @@ pipeline {
                 }
             }
         }
-        
         stage('3. Quality Gate') {
             steps {
                 waitForQualityGate abortPipeline: false, 
                 credentialsId: 'sonar-token'
             }
         }
-        
         stage('4. Install npm') {
             steps {
                 sh "npm install"
             }
         }
-        
         stage('5. Trivy Scan') {
             steps {
-                sh "trivy fs . > trivy.txt"
+                sh "trivy fs . > trivy-scan.txt"
             }
         }
-        
         stage('6. Build Docker Image') {
             steps {
                 sh "docker build -t ${params.ECR_REPO_NAME} ."
             }
         }
-        
         stage('7. Create ECR repo') {
             steps {
-                withCredentials([string(credentialsId: 'access-key', variable: 'AWS_ACCESS_KEY'), 
-                                 string(credentialsId: 'secret-key', variable: 'AWS_SECRET_KEY')]) {
+                withCredentials([string(credentialsId: 'access-key', variable: 'AWS_ACCESS_KEY'), string(credentialsId: 'secret-key', variable: 'AWS_SECRET_KEY')]) {
                     sh """
                     aws configure set aws_access_key_id $AWS_ACCESS_KEY
                     aws configure set aws_secret_access_key $AWS_SECRET_KEY
@@ -158,11 +151,9 @@ pipeline {
                 }
             }
         }
-        
         stage('8. Login to ECR & tag image') {
             steps {
-                withCredentials([string(credentialsId: 'access-key', variable: 'AWS_ACCESS_KEY'), 
-                                 string(credentialsId: 'secret-key', variable: 'AWS_SECRET_KEY')]) {
+                withCredentials([string(credentialsId: 'access-key', variable: 'AWS_ACCESS_KEY'), string(credentialsId: 'secret-key', variable: 'AWS_SECRET_KEY')]) {
                     sh """
                     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${params.AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
                     docker tag ${params.ECR_REPO_NAME} ${params.AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${params.ECR_REPO_NAME}:${BUILD_NUMBER}
@@ -171,11 +162,10 @@ pipeline {
                 }
             }
         }
-        
+
         stage('9. Push image to ECR') {
             steps {
-                withCredentials([string(credentialsId: 'access-key', variable: 'AWS_ACCESS_KEY'), 
-                                 string(credentialsId: 'secret-key', variable: 'AWS_SECRET_KEY')]) {
+                withCredentials([string(credentialsId: 'access-key', variable: 'AWS_ACCESS_KEY'), string(credentialsId: 'secret-key', variable: 'AWS_SECRET_KEY')]) {
                     sh """
                     docker push ${params.AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${params.ECR_REPO_NAME}:${BUILD_NUMBER}
                     docker push ${params.AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${params.ECR_REPO_NAME}:latest
@@ -183,16 +173,16 @@ pipeline {
                 }
             }
         }
-        
         stage('10. Cleanup Images') {
             steps {
                 sh """
                 docker rmi ${params.AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${params.ECR_REPO_NAME}:${BUILD_NUMBER}
                 docker rmi ${params.AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${params.ECR_REPO_NAME}:latest
-		docker images
+        docker images
                 """
             }
         }
+
     }
 }
 ```
@@ -345,7 +335,7 @@ pipeline {
 }
 ```
 
-## Additional Information
-For further details, refer to the word document containing a complete write-up of the project.
+###Accessing the website
+** We can access the application by using the link given by argoCD or we can configure route53 for coustom domain **
 
 ---
