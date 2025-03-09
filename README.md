@@ -1,4 +1,4 @@
-# Amazon Prime Video Clone Deployment Project
+# Amazon Prime Web App Clone Deployment Project
 ![Pipeline Overview](./src/Overview.png)
 
 ## Project Overview
