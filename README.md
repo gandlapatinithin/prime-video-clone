@@ -2,7 +2,7 @@
 ![Pipeline Overview](./src/Overview.png)
 
 ## Project Overview
-This project demonstrates deploying an Amazon Prime clone using a set of DevOps tools and practices. The primary tools include:
+This project demonstrates deploying an Amazon Prime Web App clone using a set of DevOps tools and practices. The primary tools include:
 
 - **Terraform**: Infrastructure as Code (IaC) tool to create AWS infrastructure such as EC2 instances and EKS clusters.
 - **GitHub**: Source code management.
